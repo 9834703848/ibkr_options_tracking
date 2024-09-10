@@ -72,7 +72,7 @@ async def main():
     ib = IB()
 
     # Connect to the IBKR paper trading platform
-    await ib.connectAsync('127.0.0.1', 4002, clientId=11) #ib.connectAsync('127.0.0.1', 7497, clientId=10)
+    await ib.connectAsync('127.0.0.1', 4002, clientId=12) #ib.connectAsync('127.0.0.1', 7497, clientId=10)
     # try:
     #     , timeout=60)  # Adjust clientId and timeout if needed
     #     print("Connected to IBKR successfully.")
