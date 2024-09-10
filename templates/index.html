@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBKR Executed Orders</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .positive {
+            background-color: #d4edda; /* Green */
+        }
+        .negative {
+            background-color: #f8d7da; /* Red */
+        }
+        .zero {
+            background-color: #e2e3e5; /* Gray */
+        }
+    </style>
+</head>
+<body>
+    <h1>Executed Orders Grouped by Expiry Date</h1>
+    {% for expiry, orders in data.items() %}
+        <h2>Expiry Date: {{ expiry }}</h2>
+        <table>
+            <tr>
+                <th>Execution Date</th>
+                <th>Strike</th>
+                <th>Call/Put</th>
+                <!-- <th>Symbol</th>
+                <th>Security Type</th> -->
+                <th>Position</th>
+                <th>Average Cost</th>
+                <th>Market Price</th>
+                <th>Unrealized P&L</th>
+                <th>Realized P&L</th>
+            </tr>
+            {% set totals = namespace(unrealized_pnl=0.0, realized_pnl=0.0, total_avg_cost=0.0, total_market_price=0.0) %}
+            {% for order in orders %}
+            <!-- Conditional class assignment based on Unrealized P&L value -->
+            <tr class="{% if order[6] | float > 0 %}positive{% elif order[6] | float < 0 %}negative{% else %}zero{% endif %}">
+                <td>{{ order[8] }}</td> <!-- Execution Date -->
+                <td>{{ "%.2f" | format(order[11] | float) }}</td> <!-- Strike -->
+                <td>{{ order[10] }}</td> <!-- Call/Put -->
+                <!-- <td>{{ order[1] }}</td> Symbol -->
+                <!-- <td>{{ order[2] }}</td> Security Type --> 
+                <td>{{ order[3] }}</td> <!-- Position -->
+                <td>{{ "%.2f" | format(order[4] | float) }}</td> <!-- Average Cost -->
+                <td>{{ "%.2f" | format(order[5]*100 | float) }}</td> <!-- Market Price -->
+                <td>{{ "%.2f" | format(order[6] | float) }}</td> <!-- Unrealized P&L -->
+                <td>{{ "%.2f" | format(order[7] | float) }}</td> <!-- Realized P&L -->
+            </tr>
+            {% set totals.unrealized_pnl = totals.unrealized_pnl + (order[6] | float) %}
+            {% set totals.realized_pnl = totals.realized_pnl + (order[7] | float) %}
+            {% set totals.total_avg_cost = totals.total_avg_cost + (order[4] | float) %}
+            {% set totals.total_market_price = totals.total_market_price + (order[5] | float) %}
+            {% endfor %}
+            <tr>
+                <td colspan="4"><strong>Total for Expiry {{ expiry }}:</strong></td>
+                <td><strong>{{ "%.2f" | format(totals.total_avg_cost) }}</strong></td>
+                <td><strong>{{ "%.2f" | format(totals.total_market_price * 100) }}</strong></td>
+                <td><strong>{{ "%.2f" | format(totals.unrealized_pnl) }}</strong></td>
+                <td><strong>{{ "%.2f" | format(totals.realized_pnl) }}</strong></td>
+            </tr>
+        </table>
+    {% endfor %}
+</body>
+</html>
